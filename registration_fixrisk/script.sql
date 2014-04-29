@@ -623,7 +623,7 @@ CREATE TABLE `projects` (
 
 LOCK TABLES `projects` WRITE;
 /*!40000 ALTER TABLE `projects` DISABLE KEYS */;
-INSERT INTO `projects` VALUES (1,'Unassigned Risks',0),(2,'Test Project',999999);
+INSERT INTO `projects` VALUES (0,'Unassigned Risks',0),(2,'Test Project',999999);
 /*!40000 ALTER TABLE `projects` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -986,19 +986,9 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-LOCK TABLES `user` WRITE;
+--LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,1,'simplerisk','admin','Admin','user@example.com','sAbwTbIFywWKcheyQw9a','$2a$15$7b2601b4979b1ad031b2fuqf1XkeSa4iNxsHK27tq5Va2jLhzkShW','2014-04-08 05:52:02','all',1,1,1,1,1,1,1,1,1,0),(2,0,'simplerisk','sriharsha.kappala','Sri Harsha Kappala','sriharsha.kappala@hotmail.com','FUwJ1Fcwfljm0cl9hdi5','$2a$15$0fb300a6cc1dc061004d1OJVbtkhbLeaswGdv9H9TqGrbO/9JfloK','0000-00-00 00:00:00','none',0,0,0,0,0,0,0,0,1,0);
+--INSERT INTO `user` VALUES (1,1,'simplerisk','admin','Admin','user@example.com','sAbwTbIFywWKcheyQw9a','$2a$15$7b2601b4979b1ad031b2fuqf1XkeSa4iNxsHK27tq5Va2jLhzkShW','2014-04-08 05:52:02','all',1,1,1,1,1,1,1,1,1,0),(2,0,'simplerisk','azahar.babul','Azahar','azahar.babul@gmail.com','FUwJ1Fcwfljm0cl9hdi5','$2a$15$0fb300a6cc1dc061004d1OJVbtkhbLeaswGdv9H9TqGrbO/9JfloK','0000-00-00 00:00:00','none',0,0,0,0,0,0,0,0,1,0);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
+--UNLOCK TABLES;
 -- Dump completed on 2014-04-08 11:29:18
