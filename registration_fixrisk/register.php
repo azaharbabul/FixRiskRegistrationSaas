@@ -46,7 +46,7 @@ $show_form=true;
             $company = $_POST['company'];
             $subdomain=$_POST['subdomain'];
             //$fullsubdomain=$subdomain.'.fixrisk.in';
-            $fullsubdomain=$subdomain.'.fixrnix.net';
+            $fullsubdomain=$subdomain.'.fixrnix.net.in';
             //echo $fullsubdomain;
             $contact=$_POST['contact'];
             $countryid=$_POST['country'];
@@ -57,7 +57,9 @@ $show_form=true;
             {
                 //echo('I am a hero');
                 saas_initiate($subdomain);
-                sendMailtoUser($fullname,$email,$fullsubdomain,$password);
+                $user_enable=1;//0 to disable user;
+                add_user($user_enable);
+                sendMailtoUser($fullname,$username,$email,$fullsubdomain,$password);
                 $url = 'complete.html';
                 echo '<META HTTP-EQUIV=Refresh CONTENT="0; URL='.$url.'">';
             }
@@ -79,7 +81,107 @@ $show_form=true;
     }
 
 
-function sendMailtoUser($fullname,$email,$fullsubdomain,$password)
+
+/***************************
+ * FUNCTION: GENERATE HASH *
+ ***************************/
+function generateHash($salt, $password)
+{
+    $hash = crypt($password, $salt);
+    return $hash;
+}
+
+function generate_token($size)
+{
+    $token = "";
+    $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
+
+    for ($i = 0; $i < $size; $i++)
+    {
+        $token .= $values[array_rand($values)];
+    }
+
+    return $token;
+}
+
+//function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $review_high, $review_medium, $review_low, $gen_report,$submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor,$enable_user=1)
+function add_user($enable_user)
+{
+    // Open the database connection
+    //$db = db_open();
+    $dbhost='localhost';
+    $dbport='3306';
+    $dbuser='root';
+    $dbpwd='mysql';
+    $domain_db=$_POST['subdomain'].'_riskdb';
+    $db=db_open1($dbhost,$dbport,$dbuser,$dbpwd,$domain_db);
+
+    $type = "simplerisk";
+    $user= $_POST['username'];
+    $name= $_POST['fullname'];
+    $email= $_POST['email'];
+    //Create dynamic salt for user
+    $salt = generate_token(20);
+    // Hash the salt
+    $salt_hash = '$2a$15$' . md5($salt);
+    // Generate the password hash
+    $pass = $_POST['password'];
+    $hash = generateHash($salt_hash, $pass);
+    //default team is None
+    //$teams = "none";
+//    $teams = "all";
+//    $admin= '0';
+//    $submit_risks = '0';
+//    $gen_report = '0';
+//    $modify_risks = '0';
+//    $close_risks = '0';
+//    $plan_mitigations = '0';
+//    $review_high = '0';
+//    $review_medium = '0';
+//    $review_low = '0';
+//    $multi_factor = 1;
+    $teams = "all";
+    $admin= '1';
+    $submit_risks = '1';
+    $gen_report = '1';
+    $modify_risks = '1';
+    $close_risks = '1';
+    $plan_mitigations = '1';
+    $review_high = '1';
+    $review_medium = '1';
+    $review_low = '1';
+    $multi_factor = 0;
+
+    // Insert the new user
+    $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `admin`, `review_high`, `review_medium`, `review_low`, `gen_report`,`submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`,`enabled`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :admin, :review_high, :review_medium, :review_low, :gen_report,:submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor,:enabled)");
+                                         //('simplerisk','admin','Admin','user@example.com','sAbwTbIFywWKcheyQw9a','$2a$15$7b2601b4979b1ad031b2fuqf1XkeSa4iNxsHK27tq5Va2jLhzkShW','2014-04-08 05:52:02','all',1,1,1,1,1,1,1,1,1,0)
+    $stmt->bindParam(":enabled",$enable_user, PDO::PARAM_INT);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+    $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+    $stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
+    $stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
+    $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
+    $stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
+    $stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
+    $stmt->bindParam(":review_low", $review_low, PDO::PARAM_INT);
+    $stmt->bindParam(":submit_risks", $submit_risks, PDO::PARAM_INT);
+    $stmt->bindParam(":gen_report", $gen_report, PDO::PARAM_INT);
+    $stmt->bindParam(":modify_risks", $modify_risks, PDO::PARAM_INT);
+    $stmt->bindParam(":plan_mitigations", $plan_mitigations, PDO::PARAM_INT);
+    $stmt->bindParam(":close_risks", $close_risks, PDO::PARAM_INT);
+    $stmt->bindParam(":multi_factor", $multi_factor, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close1($db);
+
+    return true;
+}
+
+function sendMailtoUser($fullname,$usename,$email,$fullsubdomain,$password)
 {
     //$email = $_POST["email"];
     $mail	= new PHPMailer; // call the class
@@ -99,7 +201,7 @@ function sendMailtoUser($fullname,$email,$fullsubdomain,$password)
     // put your while loop here like below,
     $mail->Subject = "FixRisk Registration Details"; //Subject od your mail
     $mail->AddAddress($email, $fullname); //To address who will receive this email
-    $mail->MsgHTML('<b>Dear '.strtok($fullname, ' ').',</b>'.'<br> <h1>Welcome to FixNix Risk Management.</h1></br>'.'<br>Your Login credential are</br>'.'<ul><li>URL :-'.$fullsubdomain.'</li><li>Username:-'.$email.'</li> <li>Password:-'.$password.'</li></ul>'."<br/><br/>by <a href='httpd://fixrisk.cloudapp.net'>FixRisk Team</a>"); //Put your body of the message you can place html code here
+    $mail->MsgHTML('<b>Dear '.strtok($fullname, ' ').',</b>'.'<br> <h1>Welcome to FixNix Risk Management.</h1></br>'.'<br>Your Login credential are</br>'.'<ul><li>URL :-'.$fullsubdomain.'</li><li>Username:- '.$usename.'</li> <li>Password:-'.$password.'</li></ul>'."<br/><br/>by <a href='httpd://fixrnix.net.in'>FixRisk Team</a>"); //Put your body of the message you can place html code here
     //$mail->AddAttachment("images/asif18-logo.png"); //Attach a file here if any or comment this line,
     $send = $mail->Send(); //Send the mails
     if($send){
@@ -473,7 +575,7 @@ function saas_initiate($subdomain)
                                     <div class="input-group">
                                         <span class="input-group-addon " style="width: 45px;height: ;">http://</span>
                                         <input class="form-control" data-val="true" data-val-regex="Please enter valid SubDomain,no special characters allowed. " data-val-regex-pattern="^[0-9a-zA-Z]+$" data-val-required="Please enter unique subdomain address." id="subdomain" name="subdomain" placeholder="FixNix domain name" type="text" value="" style="width: 179px;">
-                                        <span class="input-group-addon" style="width: 83px;">.fixrnix.net</span>
+                                        <span class="input-group-addon" style="width: 83px;">.fixrnix.net.in</span>
                                     </div>
                                     <div id="status2"></div>
                                 </div>
